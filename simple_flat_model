@@ -1,0 +1,55 @@
+%% Setup Definition
+M = zeros(101, 101, 100);   % AIR
+M(:,:, 1:95) = 1;   % Material
+M = uint8(M);
+cfg.vol = M;
+cfg.nphoton = 1e6;
+
+%% Properties
+cfg.prop = [0,0,1,1;    % Air
+            1, 2, 0.7, 1.4];    % Material
+cfg.isspecular = 0;
+
+%% Source
+% Pencil Source placed on top of the block at the center
+cfg.srctype = 'pencil';
+cfg.srcpos = [51, 51, 96];  % Placed on top
+cfg.srcdir = [0, 0, -1];    % Pointing straight downwards
+
+%% Detectors
+% Placed at different distances on the surface of the block
+cfg.detpos = [51, 49, 95, 2;
+    51, 43, 95, 2;
+    51, 37, 95, 2;
+    51, 31, 95, 2;];
+
+cfg.isreflect = 1;
+cfg.unitinmm = 1.0; % 1mm unit
+cfg.bc = 'aaaaaa'; % Boundary Conditions to make all light absorb at all the edges
+%% save trajectory
+cfg.maxjumpdebug = 1;
+cfg.issaveref = 1;
+
+%% time it runs
+% Run for a large time duration to capture all photons
+cfg.tstart=0;
+cfg.tend=1e-2; 
+cfg.tstep=1e-2;
+
+% Preview the model
+% mcxpreview(cfg);
+
+
+cfg.seed = 42;
+[~, detpt, ~, ~] = mcxlab(cfg);
+
+
+%% Count 
+% Count the number of photons at each detector individually
+detector_number = length(cfg.detpos); 
+count = zeros(1, detector_number); 
+for i=1:detector_number
+    count(i) = sum(detpt.data(1, :) == i);
+end
+
+
